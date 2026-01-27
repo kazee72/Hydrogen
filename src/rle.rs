@@ -43,7 +43,7 @@ pub fn compress(file_name: &str) -> io::Result<()> {
 }
 
 pub fn write_compressed(compressed_bytes: &Vec<(u8, u32)>, input_file_name: &str) -> io::Result<()> {
-    let path: String = format!("tests/output_files/{}.h2", input_file_name);
+    let path: String = format!("tests/output_files/{}.h2", input_file_name.trim_end_matches(".txt"));
     // Create new file
     let mut file = File::create(path)?;
 
@@ -78,7 +78,7 @@ pub fn decompress(file_name: &str) {
         i += 5;
     }
 
-    let _ = write_decompressed(&out, file_name);
+    let _ = write_decompressed(&out, file_name.trim_end_matches(".txt"));
 
     let duration = start.elapsed();
     println!("Decompression Time: {:.10} ms", duration.as_secs_f64() * 1000.0);
@@ -86,7 +86,7 @@ pub fn decompress(file_name: &str) {
 }
 
 pub fn write_decompressed(decompressed_bytes: &Vec<u8>, input_file_name: &str) -> io::Result<()> {
-    let path: String = format!("tests/output_files/{}_decompressed.txt", input_file_name);
+    let path: String = format!("tests/output_files/{}_decompressed.txt", input_file_name.trim_end_matches(".h2"));
     // Create new file
     let mut file = File::create(path)?;
 

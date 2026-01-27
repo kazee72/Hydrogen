@@ -6,7 +6,7 @@ mod utils;
 
 fn main() {
     let result: Result<(), io::Error> = rle::compress("test.txt");
-    let result_decompress: Result<(), io::Error> = Ok(rle::decompress("test.txt.h2"));
+    let result_decompress: Result<(), io::Error> = Ok(rle::decompress("test.h2"));
 
     match result {
         Ok(_) => println!("Status General: OK"),
