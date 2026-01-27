@@ -3,8 +3,7 @@ use std::fs::File;
 use std::time::Instant;
 use std::io::{self, Write};
 
-pub fn compress() -> io::Result<()> {
-    let file_name = "test.txt";
+pub fn compress(file_name: &str) -> io::Result<()> {
     let path = format!("tests/input_files/{file_name}");
     // Read file as binary
     let bytes: Vec<u8> = read_file_binary(path.to_string())?;
@@ -52,6 +51,48 @@ pub fn write_compressed(compressed_bytes: &Vec<(u8, u32)>, input_file_name: &str
     for (byte, count) in compressed_bytes {
         file.write_all(&[*byte])?;
         file.write_all(&count.to_le_bytes())?;
+    }
+
+    Ok(())
+}
+
+pub fn decompress(file_name: &str) {
+    let path: String = format!("tests/output_files/{file_name}");
+
+    let bytes: Vec<u8> = read_file_binary(path.to_string()).unwrap();
+    let mut out: Vec<u8> = Vec::new();
+
+    let start = Instant::now();
+
+    let mut i: usize = 0;
+
+    while i + 5 <= bytes.len() {
+        let character: u8 = bytes[i];
+        let amount: [u8; 4] = bytes[i+1..i+5].try_into().unwrap();
+        let count: u32 = u32::from_le_bytes(amount);
+
+        for _ in 0..count - 1 {
+            out.push(character);
+        }
+
+        i += 5;
+    }
+
+    let _ = write_decompressed(&out, file_name);
+
+    let duration = start.elapsed();
+    println!("Decompression Time: {:.10} ms", duration.as_secs_f64() * 1000.0);
+
+}
+
+pub fn write_decompressed(decompressed_bytes: &Vec<u8>, input_file_name: &str) -> io::Result<()> {
+    let path: String = format!("tests/output_files/{}_decompressed.txt", input_file_name);
+    // Create new file
+    let mut file = File::create(path)?;
+
+    // Write compressed data to new file
+    for byte in decompressed_bytes {
+        file.write_all(&[*byte])?;
     }
 
     Ok(())
