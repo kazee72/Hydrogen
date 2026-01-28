@@ -71,16 +71,17 @@ pub fn decompress(file_name: &str) {
         let amount: [u8; 4] = bytes[i+1..i+5].try_into().unwrap();
         let count: u32 = u32::from_le_bytes(amount);
 
-        for _ in 0..count - 1 {
+        for _ in 0..count {
             out.push(character);
         }
 
         i += 5;
     }
 
-    let _ = write_decompressed(&out, file_name.trim_end_matches(".txt"));
-
     let duration = start.elapsed();
+
+    let _ = write_decompressed(&out, file_name.trim_end_matches(".txt"));
+    
     println!("Decompression Time: {:.10} ms", duration.as_secs_f64() * 1000.0);
 
 }
