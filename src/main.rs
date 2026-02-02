@@ -26,5 +26,6 @@ fn test_rle() {
 }
 
 fn test_huffman() {
-    huffman::get_freq("test2.txt");
+    let freq: Vec<(u8, u32)> = huffman::get_freq("test2.txt");
+    huffman::build_binary_tree(freq);
 }
