@@ -89,23 +89,25 @@ pub fn build_binary_tree(char_freq: Vec<(u8, u32)>) -> Node {
         node_collection.push(temp_node);
     }
 
-    
+    // build actual tree
     while node_collection.len() > 1 {
+        // get two lowest frequency nodes
         let node_1: Node = node_collection.pop().unwrap();
         let node_2: Node = node_collection.pop().unwrap();
 
+        // make new node with combined frequency of node_1 and node_2
         let new_node: Node = Node {
             character: None,
             frequency: node_1.frequency + node_2.frequency,
+            // left and right point to the subnodes
             left: Some(Box::new(node_1)),
             right: Some(Box::new(node_2))
         };
 
         node_collection.push(new_node);
     }
-
+    // get the root
     let tree_root: Node = node_collection.pop().unwrap();
-
 
     return tree_root;
 
