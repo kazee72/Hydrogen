@@ -1,4 +1,4 @@
-use std::collections::BinaryHeap;
+use std::collections::{BinaryHeap, HashMap};
 use std::cmp::Ordering;
 
 use crate::utils::read_file_binary;
@@ -41,16 +41,13 @@ impl Eq for Node {}
 
 
 // get all frequencies of unique characters in a file
-pub fn get_freq(file_name: &str) -> Vec<(u8, u32)> {
-    let path: String = format!("tests/input_files/{file_name}");
-    // file in bytes
-    let bytes: Vec<u8> = read_file_binary(path.to_string()).unwrap();
+pub fn get_freq(file_bytes: &[u8]) -> Vec<(u8, u32)> {
 
     let mut unique_chars: Vec<u8> = Vec::new();
     let mut char_freq: Vec<(u8, u32)> = Vec::new();
     
     // get all the different characters of the file
-    for byte in &bytes {
+    for byte in file_bytes {
         if !unique_chars.contains(&byte) {
             unique_chars.push(*byte);
         }
@@ -58,14 +55,9 @@ pub fn get_freq(file_name: &str) -> Vec<(u8, u32)> {
 
     // filter to see how frequent each character appears in the input file
     for c in &unique_chars {
-        let count: usize = bytes.iter().filter(|&&b| b == *c).count();
+        let count: usize = file_bytes.iter().filter(|&&b| b == *c).count();
         char_freq.push((*c, count as u32));
     }
-
-    // sort char_freq according to the second pos in tuple (frequency of the character)
-    char_freq.sort_by_key(|t| t.1);
-    // reverse it so the most frequent character is first
-    char_freq.reverse();
 
     return char_freq;
 }
@@ -110,5 +102,45 @@ pub fn build_binary_tree(char_freq: Vec<(u8, u32)>) -> Node {
     let tree_root: Node = node_collection.pop().unwrap();
 
     return tree_root;
+
+}
+
+pub fn generate_codes(node: Node, current_code: String, codes: &mut HashMap<u8, String>) {
+
+    if node.character.is_some() {
+        codes.insert(node.character.unwrap(), current_code);
+        return;
+    }
+
+    if node.left.is_some() {
+        generate_codes(*node.left.unwrap(), current_code.clone() + "0", codes);
+    }
+
+    if node.right.is_some() {
+        generate_codes(*node.right.unwrap(), current_code + "1", codes);
+    }
+
+}
+
+pub fn compress() {
+
+    let file_binary = read_file_binary(format!("tests/input_files/test2.txt")).unwrap();
+
+    let char_freq: Vec<(u8, u32)> = get_freq(&file_binary);
+    let root: Node = build_binary_tree(char_freq);
+
+    let mut codes:  HashMap<u8, String> = HashMap::new();
+
+    generate_codes(root, String::new(), &mut codes);
+
+    let mut bytes_string: String = String::new();
+
+    for byte in file_binary {
+        bytes_string.push_str(codes.get(&byte).unwrap());
+    }
+
+
+
+    
 
 }
