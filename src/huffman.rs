@@ -1,5 +1,8 @@
 use std::collections::{BinaryHeap, HashMap};
 use std::cmp::Ordering;
+use std::fs::File;
+use std::io::Write;
+use std::time::Instant;
 
 use crate::utils::read_file_binary;
 
@@ -122,11 +125,8 @@ pub fn generate_codes(node: Node, current_code: String, codes: &mut HashMap<u8, 
 
 }
 
-pub fn compress() {
+pub fn compress(file_binary: &[u8], char_freq: Vec<(u8, u32)>) -> (Vec<u8>, u8) {
 
-    let file_binary = read_file_binary(format!("tests/input_files/test2.txt")).unwrap();
-
-    let char_freq: Vec<(u8, u32)> = get_freq(&file_binary);
     let root: Node = build_binary_tree(char_freq);
 
     let mut codes:  HashMap<u8, String> = HashMap::new();
@@ -139,8 +139,74 @@ pub fn compress() {
         bytes_string.push_str(codes.get(&byte).unwrap());
     }
 
-
-
+    let mut compressed_bytes: Vec<u8> = Vec::new();
+    let mut padding_bits_amount: u8 = 0;
     
+    for i in  (0..bytes_string.len()).step_by(8) {
+        let mut bytestring: String;
+        if i + 8 > bytes_string.len() {
+            bytestring = bytes_string[i..bytes_string.len()].to_string();
+            padding_bits_amount = 8 - bytestring.len() as u8;
+            bytestring = format!("{:0<8}", bytestring);
+        } else {
+            bytestring = bytes_string[i..i + 8].to_string();
+        }
+        compressed_bytes.push(u8::from_str_radix(&bytestring, 2).unwrap());
+    }
+
+    return (compressed_bytes, padding_bits_amount);
+}
+
+
+
+pub fn write_compressed(compressed_bytes: Vec<u8>, padding: u8, char_freq: Vec<(u8, u32)>, file_name: String) {
+
+    let path: String = format!("tests/output_files/{}.h2", file_name.trim_end_matches(".txt"));
+    // create compressed file
+    let mut compressed_file: File = File::create(path).unwrap();
+
+    // write padding amount
+    compressed_file.write_all(&[padding]).unwrap();
+
+    // write number of unique bytes
+    compressed_file.write_all(&[char_freq.len() as u8]).unwrap();
+    
+    // write character + frequency
+    for (byte, freq) in &char_freq {
+        compressed_file.write_all(&[*byte]).unwrap();
+        compressed_file.write_all(&freq.to_le_bytes()).unwrap();
+    }
+
+    // write actual data
+    compressed_file.write_all(&compressed_bytes).unwrap();
+
+}
+
+pub fn run(file_name: String) {
+
+    let path = format!("tests/input_files/{}", file_name);
+    let file_binary = read_file_binary(path).unwrap();
+
+    // start time
+    let start = Instant::now();
+
+    let char_freq: Vec<(u8, u32)> = get_freq(&file_binary);
+
+    // compress data
+    let (compressed_bytes, padding) = compress(&file_binary, char_freq.clone());
+
+    // end time
+    let duration = start.elapsed();
+
+    let uncompressed_size_bytes: usize = file_binary.len();
+    let compressed_size_bytes: usize = compressed_bytes.len();
+
+    println!("Uncompressed Length: {} bytes", uncompressed_size_bytes);
+    println!("Compressed Length: {} bytes", compressed_size_bytes);
+    println!("Compression Ratio: {:.2}%", (compressed_size_bytes as f64 / file_binary.len() as f64) * 100.0);
+    println!("Compression Time: {:.10} ms", duration.as_secs_f64() * 1000.0);
+
+    // write the data to new file
+    write_compressed(compressed_bytes, padding, char_freq, file_name);
 
 }

@@ -6,10 +6,10 @@ mod huffman;
 
 
 fn main() {
-    test_rle();
+    //test_rle();
     test_huffman();
 }
-
+#[allow(dead_code)]
 fn test_rle() {
     let result: Result<(), io::Error> = rle::compress("test.txt");
     let result_decompress: Result<(), io::Error> = Ok(rle::decompress("test.h2"));
@@ -26,5 +26,5 @@ fn test_rle() {
 }
 
 fn test_huffman() {
-    huffman::compress();
+    huffman::run("test2.txt".to_string());
 }
