@@ -1,3 +1,4 @@
+use std::arch::x86_64::CpuidResult;
 use std::collections::{BinaryHeap, HashMap};
 use std::cmp::Ordering;
 use std::fs::File;
@@ -46,23 +47,13 @@ impl Eq for Node {}
 // get all frequencies of unique characters in a file
 pub fn get_freq(file_bytes: &[u8]) -> Vec<(u8, u32)> {
 
-    let mut unique_chars: Vec<u8> = Vec::new();
-    let mut char_freq: Vec<(u8, u32)> = Vec::new();
-    
-    // get all the different characters of the file
+    let mut char_freq: HashMap<u8, u32> = HashMap::new();
+
     for byte in file_bytes {
-        if !unique_chars.contains(&byte) {
-            unique_chars.push(*byte);
-        }
+        *char_freq.entry(*byte).or_insert(0) += 1;
     }
 
-    // filter to see how frequent each character appears in the input file
-    for c in &unique_chars {
-        let count: usize = file_bytes.iter().filter(|&&b| b == *c).count();
-        char_freq.push((*c, count as u32));
-    }
-
-    return char_freq;
+    return char_freq.into_iter().collect();
 }
 
 
@@ -182,10 +173,12 @@ pub fn write_compressed(compressed_bytes: Vec<u8>, padding: u8, char_freq: Vec<(
 
 }
 
-pub fn run(file_name: String) {
 
-    let path = format!("tests/input_files/{}", file_name);
-    let file_binary = read_file_binary(path).unwrap();
+
+pub fn run_compression(file_name: String) {
+
+    let path: String = format!("tests/input_files/{}", file_name);
+    let file_binary: Vec<u8> = read_file_binary(path).unwrap();
 
     // start time
     let start = Instant::now();
@@ -208,5 +201,82 @@ pub fn run(file_name: String) {
 
     // write the data to new file
     write_compressed(compressed_bytes, padding, char_freq, file_name);
+
+
+    
+}
+
+
+
+pub fn read_header(file_name: String) -> (u8, Vec<(u8, u32)>, Vec<u8>) {
+
+    let path: String = format!("tests/output_files/{}", file_name);
+
+    let file_binary: Vec<u8> = read_file_binary(path).unwrap();
+
+    let padding: u8 = file_binary[0];
+    let unique_entries: u8 = file_binary[1];
+    let mut char_freq: Vec<(u8, u32)> = Vec::new();
+
+    let mut pos: usize = 2;
+
+    for _ in 0..unique_entries {
+        let char_byte: u8 = file_binary[pos];
+
+        let mut freq: u32 = file_binary[pos + 1] as u32;
+        freq += file_binary[pos + 2] as u32 * 256;
+        freq += file_binary[pos + 3] as u32 * 65536;
+        freq += file_binary[pos + 4] as u32 * 16777216;
+
+        char_freq.push((char_byte, freq));
+
+        pos += 5;
+    }
+
+    let compressed_data: Vec<u8> = file_binary[pos..].to_vec();
+
+    return (padding, char_freq, compressed_data);   
+}
+
+
+
+pub fn decode(file_name: String) {
+    let (padding, char_freq, compressed_data) = read_header(file_name);
+
+    let binary_tree_root: Node = build_binary_tree(char_freq);
+
+    let mut current_node: &Node = &binary_tree_root;
+    let mut output: Vec<u8> = Vec::new();
+
+    for (byte_indx, byte) in compressed_data.iter().enumerate() {
+
+        let bits_to_read = 0;
+
+        // check if we need to ignore padding bits
+        if byte_indx == compressed_data.len() - 1 {
+            8 - padding
+        } else {
+            8
+        };
+
+
+        for i in (8 - bits_to_read..8).rev() {
+            // bit shifting to get 0 / 1
+            let bit: u8 = (byte >> i) & 1;
+            // 1 = right
+            // 0 = left
+            if bit == 1 {
+                current_node = current_node.right.as_ref().unwrap();
+            } else {
+                current_node = current_node.left.as_ref().unwrap();
+            }
+
+            // check if we hit a leaf node
+            if current_node.character.is_some() {
+                output.push(current_node.character.unwrap());
+                current_node = &binary_tree_root;
+            }
+        }
+    }
 
 }

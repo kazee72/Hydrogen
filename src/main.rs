@@ -26,5 +26,6 @@ fn test_rle() {
 }
 
 fn test_huffman() {
-    huffman::run("test2.txt".to_string());
+    huffman::run_compression("test2.txt".to_string());
+    huffman::read_header("test2.h2".to_string());
 }
