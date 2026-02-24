@@ -1,4 +1,3 @@
-use std::arch::x86_64::CpuidResult;
 use std::collections::{BinaryHeap, HashMap};
 use std::cmp::Ordering;
 use std::fs::File;
@@ -9,7 +8,6 @@ use crate::utils::read_file_binary;
 
 
 
-// struct for Node in the binary tree
 pub struct Node {
     character: Option<u8>,
     frequency: u32,
@@ -44,7 +42,6 @@ impl Eq for Node {}
 
 
 
-// get all frequencies of unique characters in a file
 pub fn get_freq(file_bytes: &[u8]) -> Vec<(u8, u32)> {
 
     let mut char_freq: HashMap<u8, u32> = HashMap::new();
@@ -60,10 +57,8 @@ pub fn get_freq(file_bytes: &[u8]) -> Vec<(u8, u32)> {
 
 pub fn build_binary_tree(char_freq: Vec<(u8, u32)>) -> Node {
     
-    // collection of all the nodes before creating actual binary tree
-    let mut node_collection: BinaryHeap<Node> = BinaryHeap::new();
+    let mut heap: BinaryHeap<Node> = BinaryHeap::new();
 
-    // create a node for every character
     for (character, frequency) in char_freq {
         let temp_node: Node = Node {
             character: Some(character),
@@ -72,28 +67,25 @@ pub fn build_binary_tree(char_freq: Vec<(u8, u32)>) -> Node {
             right: None
         };
 
-        node_collection.push(temp_node);
+        heap.push(temp_node);
     }
 
     // build actual tree
-    while node_collection.len() > 1 {
-        // get two lowest frequency nodes
-        let node_1: Node = node_collection.pop().unwrap();
-        let node_2: Node = node_collection.pop().unwrap();
+    while heap.len() > 1 {
+        let node_1: Node = heap.pop().unwrap();
+        let node_2: Node = heap.pop().unwrap();
 
-        // make new node with combined frequency of node_1 and node_2
         let new_node: Node = Node {
             character: None,
             frequency: node_1.frequency + node_2.frequency,
-            // left and right point to the subnodes
             left: Some(Box::new(node_1)),
             right: Some(Box::new(node_2))
         };
 
-        node_collection.push(new_node);
+        heap.push(new_node);
     }
-    // get the root
-    let tree_root: Node = node_collection.pop().unwrap();
+
+    let tree_root: Node = heap.pop().unwrap();
 
     return tree_root;
 
@@ -153,10 +145,9 @@ pub fn compress(file_binary: &[u8], char_freq: Vec<(u8, u32)>) -> (Vec<u8>, u8) 
 pub fn write_compressed(compressed_bytes: Vec<u8>, padding: u8, char_freq: Vec<(u8, u32)>, file_name: String) {
 
     let path: String = format!("tests/output_files/{}.h2", file_name.trim_end_matches(".txt"));
-    // create compressed file
+
     let mut compressed_file: File = File::create(path).unwrap();
 
-    // write padding amount
     compressed_file.write_all(&[padding]).unwrap();
 
     // write number of unique bytes
@@ -180,15 +171,12 @@ pub fn run_compression(file_name: String) {
     let path: String = format!("tests/input_files/{}", file_name);
     let file_binary: Vec<u8> = read_file_binary(path).unwrap();
 
-    // start time
     let start = Instant::now();
 
     let char_freq: Vec<(u8, u32)> = get_freq(&file_binary);
 
-    // compress data
     let (compressed_bytes, padding) = compress(&file_binary, char_freq.clone());
 
-    // end time
     let duration = start.elapsed();
 
     let uncompressed_size_bytes: usize = file_binary.len();
@@ -199,11 +187,8 @@ pub fn run_compression(file_name: String) {
     println!("Compression Ratio: {:.2}%", (compressed_size_bytes as f64 / file_binary.len() as f64) * 100.0);
     println!("Compression Time: {:.10} ms", duration.as_secs_f64() * 1000.0);
 
-    // write the data to new file
     write_compressed(compressed_bytes, padding, char_freq, file_name);
 
-
-    
 }
 
 
@@ -240,7 +225,7 @@ pub fn read_header(file_name: String) -> (u8, Vec<(u8, u32)>, Vec<u8>) {
 
 
 
-pub fn decode(file_name: String) {
+pub fn decode(file_name: String) -> Vec<u8> {
     let (padding, char_freq, compressed_data) = read_header(file_name);
 
     let binary_tree_root: Node = build_binary_tree(char_freq);
@@ -250,28 +235,25 @@ pub fn decode(file_name: String) {
 
     for (byte_indx, byte) in compressed_data.iter().enumerate() {
 
-        let bits_to_read = 0;
+        let bits_to_read;
 
-        // check if we need to ignore padding bits
+        // ignore padding bits on the last byte
         if byte_indx == compressed_data.len() - 1 {
-            8 - padding
+            bits_to_read = 8 - padding;
         } else {
-            8
+            bits_to_read = 8;
         };
 
 
         for i in (8 - bits_to_read..8).rev() {
-            // bit shifting to get 0 / 1
             let bit: u8 = (byte >> i) & 1;
-            // 1 = right
-            // 0 = left
+            // 1 = right, 0 = left
             if bit == 1 {
                 current_node = current_node.right.as_ref().unwrap();
             } else {
                 current_node = current_node.left.as_ref().unwrap();
             }
 
-            // check if we hit a leaf node
             if current_node.character.is_some() {
                 output.push(current_node.character.unwrap());
                 current_node = &binary_tree_root;
@@ -279,4 +261,31 @@ pub fn decode(file_name: String) {
         }
     }
 
+    return output;
+}
+
+
+
+pub fn write_decompressed(input_bytes: Vec<u8>, file_name: String) {
+    let mut file: File = File::create(format!("tests/output_files/{}_decompressed.txt", file_name.trim_end_matches(".h2"))).unwrap();
+    file.write_all(&input_bytes).unwrap();
+}
+
+
+
+pub fn run_decompression(file_name: String) {
+
+    let start = Instant::now();
+
+    let output: Vec<u8> = decode(file_name.clone());
+
+    let duration = start.elapsed();
+
+    println!("Decompression Time: {:.10} ms", duration.as_secs_f64() * 1000.0);
+
+    write_decompressed(output, file_name);
+
+    let original = read_file_binary("tests/input_files/test2.txt".to_string()).unwrap();
+    let decompressed = read_file_binary("tests/output_files/test2_decompressed.txt".to_string()).unwrap();
+    println!("Match: {}", original == decompressed);
 }
