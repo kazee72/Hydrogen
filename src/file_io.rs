@@ -8,7 +8,7 @@ use crate::huffman;
 
 pub fn run_compression(file_name: String) {
 
-    let path: String = format!("tests/input_files/{}", file_name);
+    let path: String = format!("tests/fixtures/input_files/{}", file_name);
     let file_binary: Vec<u8> = fs::read(path).unwrap();
 
     let start = Instant::now();
@@ -35,7 +35,7 @@ pub fn run_compression(file_name: String) {
 
 pub fn write_compressed(compressed_bytes: Vec<u8>, padding: u8, char_freq: Vec<(u8, u32)>, file_name: String) {
 
-    let path: String = format!("tests/output_files/{}.h2", file_name.trim_end_matches(".txt"));
+    let path: String = format!("tests/fixtures/output_files/compressed/{}.h2", file_name.trim_end_matches(".txt"));
 
     let mut compressed_file: File = File::create(path).unwrap();
 
@@ -59,7 +59,7 @@ pub fn write_compressed(compressed_bytes: Vec<u8>, padding: u8, char_freq: Vec<(
 
 pub fn read_header(file_name: String) -> (u8, Vec<(u8, u32)>, Vec<u8>) {
 
-    let path: String = format!("tests/output_files/{}", file_name);
+    let path: String = format!("tests/fixtures/output_files/compressed/{}", file_name);
 
     let file_binary: Vec<u8> = fs::read(path).unwrap();
 
@@ -103,14 +103,14 @@ pub fn run_decompression(file_name: String) {
 
     write_decompressed(output, file_name);
 
-    let original: Vec<u8> = fs::read("tests/input_files/test2.txt".to_string()).unwrap();
-    let decompressed: Vec<u8> = fs::read("tests/output_files/test2_decompressed.txt".to_string()).unwrap();
+    let original: Vec<u8> = fs::read("tests/fixtures/input_files/test2.txt".to_string()).unwrap();
+    let decompressed: Vec<u8> = fs::read("tests/fixtures/output_files/decompressed/test2_decompressed.txt".to_string()).unwrap();
     println!("Match: {}", original == decompressed);
 }
 
 
 
 pub fn write_decompressed(input_bytes: Vec<u8>, file_name: String) {
-    let mut file: File = File::create(format!("tests/output_files/{}_decompressed.txt", file_name.trim_end_matches(".h2"))).unwrap();
+    let mut file: File = File::create(format!("tests/fixtures/output_files/decompressed/{}_decompressed.txt", file_name.trim_end_matches(".h2"))).unwrap();
     file.write_all(&input_bytes).unwrap();
 }
