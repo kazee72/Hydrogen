@@ -1,12 +1,11 @@
-use crate::utils::read_file_binary;
-use std::fs::File;
+use std::fs::{ self, File};
 use std::time::Instant;
 use std::io::{self, Write};
 
 pub fn compress(file_name: &str) -> io::Result<()> {
     let path = format!("tests/input_files/{file_name}");
     // Read file as binary
-    let bytes: Vec<u8> = read_file_binary(path.to_string())?;
+    let bytes: Vec<u8> = fs::read(path.to_string())?;
     let mut compressed: Vec<(u8, u32)> = Vec::new();
     let mut i: usize = 0;
 
@@ -59,7 +58,7 @@ pub fn write_compressed(compressed_bytes: &Vec<(u8, u32)>, input_file_name: &str
 pub fn decompress(file_name: &str) {
     let path: String = format!("tests/output_files/{file_name}");
 
-    let bytes: Vec<u8> = read_file_binary(path.to_string()).unwrap();
+    let bytes: Vec<u8> = fs::read(path.to_string()).unwrap();
     let mut out: Vec<u8> = Vec::new();
 
     let start = Instant::now();

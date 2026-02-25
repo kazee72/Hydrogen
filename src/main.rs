@@ -1,16 +1,16 @@
 use std::io;
 
 mod rle;
-mod utils;
 mod huffman;
+mod file_io;
 
 
 fn main() {
-    //test_rle();
-    test_huffman();
+    //run_rle();
+    run_huffman();
 }
 #[allow(dead_code)]
-fn test_rle() {
+fn run_rle() {
     let result: Result<(), io::Error> = rle::compress("test.txt");
     let result_decompress: Result<(), io::Error> = Ok(rle::decompress("test.h2"));
 
@@ -25,7 +25,7 @@ fn test_rle() {
     }
 }
 
-fn test_huffman() {
-    huffman::run_compression("test_pic.jpg".to_string());
-    huffman::run_decompression("test_pic.h2".to_string());
+fn run_huffman() {
+    file_io::run_compression("test2.txt".to_string());
+    file_io::run_decompression("test2.h2".to_string());
 }
