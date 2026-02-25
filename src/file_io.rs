@@ -7,10 +7,9 @@ use crate::huffman;
 
 
 
-pub fn run_compression(file_name: &str) -> io::Result<()> {
+pub fn run_compression(input_path: &str, output_path: &str) -> io::Result<()> {
 
-    let path = format!("tests/fixtures/input_files/{}", file_name);
-    let file_binary = fs::read(path)?;
+    let file_binary = fs::read(input_path)?;
 
     let start = Instant::now();
 
@@ -28,16 +27,14 @@ pub fn run_compression(file_name: &str) -> io::Result<()> {
     println!("Compression Ratio: {:.2}%", (compressed_size_bytes as f64 / file_binary.len() as f64) * 100.0);
     println!("Compression Time: {:.10} ms", duration.as_secs_f64() * 1000.0);
 
-    write_compressed(compressed_bytes, padding, &char_freq, file_name)?;
+    write_compressed(compressed_bytes, padding, &char_freq, output_path)?;
 
     Ok(())
 }
 
 
 
-pub fn write_compressed(compressed_bytes: Vec<u8>, padding: u8, char_freq: &HashMap<u8, u32>, file_name: &str) -> io::Result<()> {
-
-    let path: String = format!("tests/fixtures/output_files/compressed/{}.h2", file_name.trim_end_matches(".txt"));
+pub fn write_compressed(compressed_bytes: Vec<u8>, padding: u8, char_freq: &HashMap<u8, u32>, path: &str) -> io::Result<()> {
 
     let mut compressed_file = File::create(path)?;
 
@@ -60,9 +57,7 @@ pub fn write_compressed(compressed_bytes: Vec<u8>, padding: u8, char_freq: &Hash
 
 
 
-pub fn read_header(file_name: &str) -> io::Result<(u8, HashMap<u8, u32>, Vec<u8>)> {
-
-    let path: String = format!("tests/fixtures/output_files/compressed/{}", file_name);
+pub fn read_header(path: &str) -> io::Result<(u8, HashMap<u8, u32>, Vec<u8>)> {
 
     let file_binary: Vec<u8> = fs::read(path)?;
 
@@ -94,11 +89,11 @@ pub fn read_header(file_name: &str) -> io::Result<(u8, HashMap<u8, u32>, Vec<u8>
 
 
 
-pub fn run_decompression(file_name: &str) -> io::Result<()>{
+pub fn run_decompression(input_path: &str, output_path: &str) -> io::Result<()>{
 
     let start = Instant::now();
 
-    let (padding, char_freq, compressed_data) = read_header(file_name)?;
+    let (padding, char_freq, compressed_data) = read_header(input_path)?;
 
     let output = huffman::decode(padding, &char_freq, compressed_data);
 
@@ -106,15 +101,15 @@ pub fn run_decompression(file_name: &str) -> io::Result<()>{
 
     println!("Decompression Time: {:.10} ms", duration.as_secs_f64() * 1000.0);
 
-    write_decompressed(output, file_name)?;
+    write_decompressed(output, output_path)?;
 
     Ok(())
 }
 
 
 
-pub fn write_decompressed(input_bytes: Vec<u8>, file_name: &str) -> io::Result<()> {
-    let mut file = File::create(format!("tests/fixtures/output_files/decompressed/{}_decompressed.txt", file_name.trim_end_matches(".h2")))?;
+pub fn write_decompressed(input_bytes: Vec<u8>, path: &str) -> io::Result<()> {
+    let mut file = File::create(path)?;
     file.write_all(&input_bytes)?;
     Ok(())
 }
