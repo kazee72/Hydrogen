@@ -10,6 +10,20 @@ pub struct Node {
     right: Option<Box<Node>>
 }
 
+impl Node {
+    pub fn new_leaf(character: u8, frequency: u32) -> Self {
+        Node { character: Some(character), frequency, left: None, right: None }
+    }
+
+    pub fn new_internal(left: Node, right: Node) -> Self {
+        Node { 
+            character: None,
+            frequency: left.frequency + right.frequency,
+            left: Some(Box::new(left)),
+            right: Some(Box::new(right)), 
+        }
+    }
+}
 
 
 // --- turn MAX-Heap into MIN-Heap ---
@@ -37,7 +51,7 @@ impl Eq for Node {}
 
 
 
-pub fn get_freq(file_bytes: &[u8]) -> Vec<(u8, u32)> {
+pub fn get_freq(file_bytes: &[u8]) -> HashMap<u8, u32> {
 
     let mut char_freq: HashMap<u8, u32> = HashMap::new();
 
@@ -45,77 +59,64 @@ pub fn get_freq(file_bytes: &[u8]) -> Vec<(u8, u32)> {
         *char_freq.entry(*byte).or_insert(0) += 1;
     }
 
-    return char_freq.into_iter().collect();
+    char_freq
 }
 
 
 
-pub fn build_binary_tree(char_freq: Vec<(u8, u32)>) -> Node {
+pub fn build_binary_tree(char_freq: &HashMap<u8, u32>) -> Node {
     
     let mut heap: BinaryHeap<Node> = BinaryHeap::new();
 
-    for (character, frequency) in char_freq {
-        let temp_node: Node = Node {
-            character: Some(character),
-            frequency: frequency,
-            left: None,
-            right: None
-        };
-
+    for (&character, &frequency) in char_freq {
+        let temp_node= Node::new_leaf(character, frequency);
         heap.push(temp_node);
     }
 
-    // build actual tree
     while heap.len() > 1 {
-        let node_1: Node = heap.pop().unwrap();
-        let node_2: Node = heap.pop().unwrap();
+        let left = heap.pop().unwrap();
+        let right = heap.pop().unwrap();
 
-        let new_node: Node = Node {
-            character: None,
-            frequency: node_1.frequency + node_2.frequency,
-            left: Some(Box::new(node_1)),
-            right: Some(Box::new(node_2))
-        };
+        let new_node = Node::new_internal(left, right);
 
         heap.push(new_node);
     }
 
-    let tree_root: Node = heap.pop().unwrap();
+    let tree_root = heap.pop().unwrap();
 
-    return tree_root;
-
+    tree_root
 }
 
 
 
-pub fn generate_codes(node: Node, current_code: String, codes: &mut HashMap<u8, String>) {
+pub fn generate_codes(node: &Node, current_code: String, codes: &mut HashMap<u8, String>) {
 
-    if node.character.is_some() {
-        codes.insert(node.character.unwrap(), current_code);
+    if let Some(ch) = node.character {
+        codes.insert(ch, current_code);
         return;
     }
 
-    if node.left.is_some() {
-        generate_codes(*node.left.unwrap(), current_code.clone() + "0", codes);
+    if let Some(left) = &node.left {
+        generate_codes(left, current_code.clone() + "0", codes);
     }
 
-    if node.right.is_some() {
-        generate_codes(*node.right.unwrap(), current_code + "1", codes);
+    if let Some(right) = &node.right {
+        generate_codes(right, current_code + "1", codes);
     }
 
 }
 
 
 
-pub fn compress(file_binary: &[u8], char_freq: Vec<(u8, u32)>) -> (Vec<u8>, u8) {
+pub fn compress(file_binary: &[u8], char_freq: &HashMap<u8, u32>) -> (Vec<u8>, u8) {
 
-    let root: Node = build_binary_tree(char_freq);
+    let root = build_binary_tree(char_freq);
 
     let mut codes:  HashMap<u8, String> = HashMap::new();
 
-    generate_codes(root, String::new(), &mut codes);
+    generate_codes(&root, String::new(), &mut codes);
 
-    let mut bytes_string: String = String::new();
+    let mut bytes_string = String::new();
 
     for byte in file_binary {
         bytes_string.push_str(codes.get(&byte).unwrap());
@@ -136,16 +137,16 @@ pub fn compress(file_binary: &[u8], char_freq: Vec<(u8, u32)>) -> (Vec<u8>, u8) 
         compressed_bytes.push(u8::from_str_radix(&bytestring, 2).unwrap());
     }
 
-    return (compressed_bytes, padding_bits_amount);
+    (compressed_bytes, padding_bits_amount)
 }
 
 
 
-pub fn decode(padding: u8, char_freq: Vec<(u8, u32)>, compressed_data: Vec<u8>) -> Vec<u8> {
+pub fn decode(padding: u8, char_freq: &HashMap<u8, u32>, compressed_data: Vec<u8>) -> Vec<u8> {
 
-    let binary_tree_root: Node = build_binary_tree(char_freq);
+    let binary_tree_root = build_binary_tree(char_freq);
 
-    let mut current_node: &Node = &binary_tree_root;
+    let mut current_node = &binary_tree_root;
     let mut output: Vec<u8> = Vec::new();
 
     for (byte_indx, byte) in compressed_data.iter().enumerate() {
@@ -161,7 +162,7 @@ pub fn decode(padding: u8, char_freq: Vec<(u8, u32)>, compressed_data: Vec<u8>) 
 
 
         for i in (8 - bits_to_read..8).rev() {
-            let bit: u8 = (byte >> i) & 1;
+            let bit = (byte >> i) & 1;
             // 1 = right, 0 = left
             if bit == 1 {
                 current_node = current_node.right.as_ref().unwrap();
@@ -169,12 +170,12 @@ pub fn decode(padding: u8, char_freq: Vec<(u8, u32)>, compressed_data: Vec<u8>) 
                 current_node = current_node.left.as_ref().unwrap();
             }
 
-            if current_node.character.is_some() {
-                output.push(current_node.character.unwrap());
+            if let Some(ch) = current_node.character {
+                output.push(ch);
                 current_node = &binary_tree_root;
             }
         }
     }
 
-    return output;
+    output
 }
