@@ -92,7 +92,11 @@ pub fn build_binary_tree(char_freq: &HashMap<u8, u32>) -> Node {
 pub fn generate_codes(node: &Node, current_code: String, codes: &mut HashMap<u8, String>) {
 
     if let Some(ch) = node.character {
-        codes.insert(ch, current_code);
+        if current_code.is_empty() {
+            codes.insert(ch, "0".to_string());
+        } else {
+            codes.insert(ch, current_code);
+        }
         return;
     }
 
@@ -109,6 +113,10 @@ pub fn generate_codes(node: &Node, current_code: String, codes: &mut HashMap<u8,
 
 
 pub fn compress(file_binary: &[u8], char_freq: &HashMap<u8, u32>) -> (Vec<u8>, u8) {
+
+    if file_binary.is_empty() {
+        return (Vec::new(), 0);
+    }
 
     let root = build_binary_tree(char_freq);
 
@@ -144,7 +152,15 @@ pub fn compress(file_binary: &[u8], char_freq: &HashMap<u8, u32>) -> (Vec<u8>, u
 
 pub fn decode(padding: u8, char_freq: &HashMap<u8, u32>, compressed_data: Vec<u8>) -> Vec<u8> {
 
+    if compressed_data.is_empty() {
+        return Vec::new();
+    }
+
     let binary_tree_root = build_binary_tree(char_freq);
+
+    if let Some(ch) = binary_tree_root.character {
+        return vec![ch; binary_tree_root.frequency as usize];
+    }
 
     let mut current_node = &binary_tree_root;
     let mut output: Vec<u8> = Vec::new();
