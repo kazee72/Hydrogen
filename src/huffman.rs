@@ -4,6 +4,7 @@ use std::cmp::Ordering;
 
 
 pub struct Node {
+    id: u32,
     character: Option<u8>,
     frequency: u32,
     left: Option<Box<Node>>,
@@ -11,12 +12,13 @@ pub struct Node {
 }
 
 impl Node {
-    pub fn new_leaf(character: u8, frequency: u32) -> Self {
-        Node { character: Some(character), frequency, left: None, right: None }
+    pub fn new_leaf(id: u32, character: u8, frequency: u32) -> Self {
+        Node { id, character: Some(character), frequency, left: None, right: None }
     }
 
-    pub fn new_internal(left: Node, right: Node) -> Self {
+    pub fn new_internal(id: u32, left: Node, right: Node) -> Self {
         Node { 
+            id,
             character: None,
             frequency: left.frequency + right.frequency,
             left: Some(Box::new(left)),
@@ -31,6 +33,8 @@ impl Node {
 impl Ord for Node {
     fn cmp(&self, other: &Self) -> Ordering {
         other.frequency.cmp(&self.frequency)
+        .then_with(|| self.character.cmp(&other.character))
+        .then_with(|| self.id.cmp(&other.id))
     }
 }
 // these need to be implemented for Ord to work for Node
@@ -68,8 +72,11 @@ pub fn build_binary_tree(char_freq: &HashMap<u8, u32>) -> Node {
     
     let mut heap: BinaryHeap<Node> = BinaryHeap::new();
 
+    let mut id_counter: u32 = 0;
+
     for (&character, &frequency) in char_freq {
-        let temp_node= Node::new_leaf(character, frequency);
+        id_counter += 1;
+        let temp_node= Node::new_leaf(id_counter, character, frequency);
         heap.push(temp_node);
     }
 
@@ -77,7 +84,9 @@ pub fn build_binary_tree(char_freq: &HashMap<u8, u32>) -> Node {
         let left = heap.pop().unwrap();
         let right = heap.pop().unwrap();
 
-        let new_node = Node::new_internal(left, right);
+        id_counter += 1;
+
+        let new_node = Node::new_internal(id_counter, left, right);
 
         heap.push(new_node);
     }
