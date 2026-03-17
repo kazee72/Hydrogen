@@ -24,8 +24,8 @@ The binary will be at `target/release/hydropress` (or `hydropress.exe` on Window
 **Compress a file:**
 
 ```sh
-hydrogen compress myfile.txt                     # outputs myfile.h2
-hydrogen compress myfile.txt -o backup           # outputs backup.h2
+hydropress compress myfile.txt                     # outputs myfile.h2
+hydropress compress myfile.txt -o backup           # outputs backup.h2
 ```
 
 **Decompress a file:**
@@ -41,7 +41,7 @@ Compressed files always use the `.h2` extension. On decompression, the default o
 
 ```sh
 hydropress --help
-hydroprerss compress --help
+hydropress compress --help
 ```
 
 ## .h2 File Format
