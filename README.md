@@ -12,27 +12,27 @@ hydropress reads a file as raw bytes, builds a Huffman tree based on byte freque
 ## Installation
 
 ```sh
-git clone https://github.com/kazee72/hydropress.git
-cd hydropress
+git clone https://github.com/kazee72/Hydrogen.git
+cd Hydrogen
 cargo build --release
 ```
 
-The binary will be at `target/release/hydropress` (or `hydropress.exe` on Windows).
+The binary will be at `target/release/hydrogen` (or `hydrogen.exe` on Windows).
 
 ## Usage
 
 **Compress a file:**
 
 ```sh
-hydropress compress myfile.txt                     # outputs myfile.h2
-hydropress compress myfile.txt -o backup           # outputs backup.h2
+hydrogen compress myfile.txt                     # outputs myfile.h2
+hydrogen compress myfile.txt -o backup           # outputs backup.h2
 ```
 
 **Decompress a file:**
 
 ```sh
-hydropress decompress myfile.h2                    # outputs myfile.txt
-hydropress decompress myfile.h2 -o original.md     # outputs original.md
+hydrogen decompress myfile.h2                    # outputs myfile.txt
+hydrogen decompress myfile.h2 -o original.md     # outputs original.md
 ```
 
 Compressed files always use the `.h2` extension. On decompression, the default output is `.txt` — use `-o` to specify a different name or extension.
@@ -40,8 +40,8 @@ Compressed files always use the `.h2` extension. On decompression, the default o
 **Help:**
 
 ```sh
-hydropress --help
-hydropress compress --help
+hydrogen --help
+hydrogen compress --help
 ```
 
 ## .h2 File Format
