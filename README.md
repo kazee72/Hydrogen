@@ -12,7 +12,7 @@ Hydrogen reads a file as raw bytes, builds a Huffman tree based on byte frequenc
 ## Installation
 
 ```sh
-git clone https://github.com/yourusername/hydrogen.git
+git clone https://github.com/kazee72/Hydrogen.git
 cd hydrogen
 cargo build --release
 ```
