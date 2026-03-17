@@ -7,7 +7,7 @@ A fast, lightweight file compression CLI tool built in Rust using Huffman coding
 
 ## How it works
 
-Hydrogen reads a file as raw bytes, builds a Huffman tree based on byte frequency, and encodes the data using variable-length prefix-free codes — shorter codes for frequent bytes, longer codes for rare ones. The compressed output is stored in a custom `.h2` binary format that includes the frequency table for decompression.
+Hydrogen reads a file as raw bytes, builds a Huffman tree based on byte frequency, and encodes the data using variable-length prefix-free codes --> shorter codes for frequent bytes, longer codes for rare ones. The compressed output is stored in a custom `.h2` binary format that includes the frequency table for decompression.
 
 ## Installation
 
