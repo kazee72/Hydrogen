@@ -1,6 +1,6 @@
 [package]
 name = "hydropress"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["Joel Bonini"]
 description = "A fast, lightweight file compression CLI tool using Huffman coding"
