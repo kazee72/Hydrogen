@@ -44,7 +44,10 @@ fn main() {
 
             match file_io::run_compression(&file, &output) {
                 Ok(()) => println!("Compression Successful"),
-                Err(e) => eprintln!("Compression Failed: {}", e),
+                Err(e) => {
+                    eprintln!("Compression Failed: {}", e);
+                    std::process::exit(1);
+            }
             };
         }
         Commands::Decompress { file, output } => {
@@ -55,7 +58,10 @@ fn main() {
 
             match file_io::run_decompression(&file, &output) {
                 Ok(()) => println!("Decompression Successful"),
-                Err(e) => eprintln!("Decompression Failed: {}", e),
+                Err(e) => {
+                    eprintln!("Decompression Failed: {}", e);
+                    std::process::exit(1);
+            }
             };
         }
     }

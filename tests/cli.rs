@@ -26,3 +26,35 @@ fn file_roundtrip() {
 
     assert_eq!(original_input, decompressed_input);
 }
+
+#[test]
+fn compress_nonexistent_file_fails() {
+    let mut cmd = Command::cargo_bin("hydrogen").expect("binary not found");
+    cmd.args(&["compress", "nonexistentfile.txt"]);
+
+    cmd.assert().failure();
+}
+
+#[test]
+fn decompress_nonexistent_file_fails() {
+    let mut cmd = Command::cargo_bin("hydrogen").expect("binary not found");
+    cmd.args(&["decompress", "nonexistentfile.txt"]);
+
+    cmd.assert().failure();
+}
+
+#[test]
+fn missing_arguments_fails() {
+    let mut cmd = Command::cargo_bin("hydrogen").expect("binary not found");
+    cmd.arg("compress");
+
+    cmd.assert().failure();
+}
+
+#[test]
+fn help_command() {
+    let mut cmd = Command::cargo_bin("hydrogen").expect("binary not found");
+    cmd.arg("--help");
+
+    cmd.assert().success();
+}
