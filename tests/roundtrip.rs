@@ -1,4 +1,4 @@
-use hydrogen::huffman;
+use hydropress::huffman;
 
 fn assert_roundtrip(input: &[u8]) {
     let char_freq = huffman::get_freq(input);

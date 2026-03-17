@@ -1,11 +1,11 @@
 [package]
-name = "hydrogen"
+name = "hydropress"
 version = "0.1.0"
 edition = "2021"
 authors = ["Joel Bonini"]
 description = "A fast, lightweight file compression CLI tool using Huffman coding"
 license = "MIT"
-repository = "https://github.com/kazee72/Hydrogen"
+repository = "https://github.com/kazee72/hydropress"
 keywords = ["compression", "huffman", "cli"]
 categories = ["command-line-utilities", "compression"]
 

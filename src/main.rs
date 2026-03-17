@@ -1,9 +1,9 @@
 use std::path::Path;
-use hydrogen::file_io;
+use hydropress::file_io;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "hydrogen", about = "Huffman compression tool")]
+#[command(name = "hydropress", about = "Huffman compression tool")]
 struct Cli {
     #[command(subcommand)]
     command: Commands,

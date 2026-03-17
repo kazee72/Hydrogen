@@ -8,12 +8,12 @@ fn file_roundtrip() {
     let mut input = NamedTempFile::new().unwrap();
     input.write_all(b"test for file rountrip").unwrap();
 
-    let mut cmd = Command::cargo_bin("hydrogen").expect("binary not found");
+    let mut cmd = Command::cargo_bin("hydropress").expect("binary not found");
     cmd.args(&["compress", input.path().to_str().unwrap()]);
 
     cmd.assert().success();
 
-    let mut cmd2 = Command::cargo_bin("hydrogen").expect("binary not found");
+    let mut cmd2 = Command::cargo_bin("hydropress").expect("binary not found");
     let input_h2_path = input.path().with_extension("h2").to_string_lossy().to_string();
     let output_path = input.path().with_extension("txt").to_string_lossy().to_string();
 
@@ -29,7 +29,7 @@ fn file_roundtrip() {
 
 #[test]
 fn compress_nonexistent_file_fails() {
-    let mut cmd = Command::cargo_bin("hydrogen").expect("binary not found");
+    let mut cmd = Command::cargo_bin("hydropress").expect("binary not found");
     cmd.args(&["compress", "nonexistentfile.txt"]);
 
     cmd.assert().failure();
@@ -37,7 +37,7 @@ fn compress_nonexistent_file_fails() {
 
 #[test]
 fn decompress_nonexistent_file_fails() {
-    let mut cmd = Command::cargo_bin("hydrogen").expect("binary not found");
+    let mut cmd = Command::cargo_bin("hydropress").expect("binary not found");
     cmd.args(&["decompress", "nonexistentfile.txt"]);
 
     cmd.assert().failure();
@@ -45,7 +45,7 @@ fn decompress_nonexistent_file_fails() {
 
 #[test]
 fn missing_arguments_fails() {
-    let mut cmd = Command::cargo_bin("hydrogen").expect("binary not found");
+    let mut cmd = Command::cargo_bin("hydropress").expect("binary not found");
     cmd.arg("compress");
 
     cmd.assert().failure();
@@ -53,7 +53,7 @@ fn missing_arguments_fails() {
 
 #[test]
 fn help_command() {
-    let mut cmd = Command::cargo_bin("hydrogen").expect("binary not found");
+    let mut cmd = Command::cargo_bin("hydropress").expect("binary not found");
     cmd.arg("--help");
 
     cmd.assert().success();

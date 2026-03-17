@@ -1,4 +1,4 @@
-# Hydrogen
+# hydropress
 
 ![Rust](https://img.shields.io/badge/Rust-000000?style=flat&logo=rust&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
@@ -7,32 +7,32 @@ A fast, lightweight file compression CLI tool built in Rust using Huffman coding
 
 ## How it works
 
-Hydrogen reads a file as raw bytes, builds a Huffman tree based on byte frequency, and encodes the data using variable-length prefix-free codes --> shorter codes for frequent bytes, longer codes for rare ones. The compressed output is stored in a custom `.h2` binary format that includes the frequency table for decompression.
+hydropress reads a file as raw bytes, builds a Huffman tree based on byte frequency, and encodes the data using variable-length prefix-free codes --> shorter codes for frequent bytes, longer codes for rare ones. The compressed output is stored in a custom `.h2` binary format that includes the frequency table for decompression.
 
 ## Installation
 
 ```sh
-git clone https://github.com/kazee72/Hydrogen.git
-cd hydrogen
+git clone https://github.com/kazee72/hydropress.git
+cd hydropress
 cargo build --release
 ```
 
-The binary will be at `target/release/hydrogen` (or `hydrogen.exe` on Windows).
+The binary will be at `target/release/hydropress` (or `hydropress.exe` on Windows).
 
 ## Usage
 
 **Compress a file:**
 
 ```sh
-hydrogen compress myfile.txt                     # outputs myfile.h2
-hydrogen compress myfile.txt -o backup           # outputs backup.h2
+hydropress compress myfile.txt                     # outputs myfile.h2
+hydropress compress myfile.txt -o backup           # outputs backup.h2
 ```
 
 **Decompress a file:**
 
 ```sh
-hydrogen decompress myfile.h2                    # outputs myfile.txt
-hydrogen decompress myfile.h2 -o original.md     # outputs original.md
+hydropress decompress myfile.h2                    # outputs myfile.txt
+hydropress decompress myfile.h2 -o original.md     # outputs original.md
 ```
 
 Compressed files always use the `.h2` extension. On decompression, the default output is `.txt` — use `-o` to specify a different name or extension.
@@ -40,8 +40,8 @@ Compressed files always use the `.h2` extension. On decompression, the default o
 **Help:**
 
 ```sh
-hydrogen --help
-hydrogen compress --help
+hydropress --help
+hydropress compress --help
 ```
 
 ## .h2 File Format
